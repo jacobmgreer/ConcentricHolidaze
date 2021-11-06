@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-32906329-1"></script>
+		<script>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+		  gtag('config', 'UA-32906329-1');
+		</script>
+		
+		<meta charset="utf-8">
+		<title>Jacob's Modern Christmas Tree Aerial Visualization</title>
+		<meta name="viewport" content="width=600">
+		
+    <style type="text/css">
+      .center {
+        position: absolute;
+        top: 500px;
+        left: 50%;
+        transform: translate(-50%, -50%);}
+      .card {
+        position:absolute;
+        top:700px;
+        width:400px;
+        margin-left:auto;
+        margin-right:auto;
+        margin-bottom:25px;}
+      #tooltip {display: none;}
+    </style>
+    
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.0/font/bootstrap-icons.css">
+  </head>
+  <body onload="tree('2021.ring','2021.order','2021.color')">
+    <h1 class="display-1 text-center">Concentric Holidaze</h1>
+    <div class="nav justify-content-center">
+      <a class="nav-link" onclick="tree('2020.ring','2020.order','2020.color')"><i class="bi bi-tree-fill"></i> 2020</a>
+      <a class="nav-link" onclick="tree('2021.ring','2021.order','2021.color')"><i class="bi bi-tree-fill"></i> 2021</a>
+    </div>
+    
+    <div id="chart">
+      <svg width="960" height="960" class="center"></svg>
+    </div>
+
+    <div class="card" id="tooltip">
+      <div class="card-header text-center" id="label"></div>
+      <div class="card-body">
+        <p class="card-text" id="type"></p>
+        <p class="card-text" id="maker"></p>
+        <p class="card-text" id="material"></p>
+      </div>
+      <div class="card-footer text-end">
+        <div class="container text-center">
+          <div class="row">
+            <div class="col" id="tree-ring"></div>
+            <div class="col" id="tree-hook"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script type="text/javascript">
+    
+    function tree(ring, order, color) {
+      d3.selectAll("svg > *").remove();
+      d3.csv('ornaments.csv',function(data) {
+      	var data2 = data.filter(element => element[ring] !== "");
+        var dataset2 = d3.nest()
+          .key(function(d) { return d[ring]; })
+          .entries(data2);
+        console.log(dataset2);
+        
+        var pie = d3.layout.pie().value(function(d) { return 1; }).sort(function(a, b){
+    			return a[order]-b[order]});
+        var arc = d3.svg.arc();
+        var ringcolor = "#01087C";
+    
+        var svg = d3.select("svg")
+            .attr("width", 600)
+            .attr("height", 600)
+            .append("g")
+            .attr("transform", "translate(300,300)");
+    
+        var gs = svg.selectAll("g").data(dataset2).enter().append("g");
+    
+        var path = gs.selectAll("path")
+            .data(function(d) { 
+                return pie(d.values); })
+          .enter().append("path")
+            .attr("fill", function(d, i) { 
+                return d.data[color] ? d.data[color] : ringcolor;})
+            .attr("d", function(d, i, j) { 
+                return arc.innerRadius(10+25*j).outerRadius(25*(j+1))(d); });
+                
+        var tooltip = d3.select('#tooltip');
+  			path.on('mousedown', function(d) {
+  				tooltip.select('#label').html(d.data.Label);
+  				tooltip.select('#type').html("<i class=\"bi bi-tag\"></i> " + d.data.Type);
+  				tooltip.select('#maker').html("<i class=\"bi bi-stars\"></i> " + d.data.Maker);
+  				tooltip.select('#material').html("<i class=\"bi bi-nut\"></i> " + d.data.Material);
+  	      tooltip.select('#tree-ring').html("<i class=\"bi bi-bullseye\"></i> " + d.data[ring]);
+  	      tooltip.select('#tree-hook').html("<i class=\"bi bi-dash-circle-dotted\"></i> " + d.data[order]);
+					d.data.Added !== "Blank" ? tooltip.style('display', 'block') : tooltip.style('display', 'none');
+  			});
+    	})
+    }
+    </script>
+  </body>
+</html>
