@@ -74,7 +74,7 @@
         var dataset2 = d3.nest()
           .key(function(d) { return d[ring]; })
           .entries(data2);
-        console.log(dataset2);
+        //console.log(dataset2);
         
         var pie = d3.layout.pie().value(function(d) { return 1; }).sort(function(a, b){
     			return a[order]-b[order]});
